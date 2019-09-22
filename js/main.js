@@ -8,10 +8,14 @@ var MESSAGES = ['Всё отлично!', 'В целом всё неплохо. 
   'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.',
   'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!'];
 var PHOTOS_COUNT = 25;
-var LIKES_MIN = 15;
-var LIKES_MAX = 200;
-var COMMENTS_MIN = 1;
-var COMMENTS_MAX = 6;
+var LIKES = {
+  MIN: 15,
+  MAX: 200
+};
+var COMMENTS = {
+  MIN: 1,
+  MAX: 6
+};
 
 var similarListElement = document.querySelector('.pictures');
 
@@ -21,7 +25,7 @@ var getRandomElement = function (min, max) {
 };
 
 var getRandomComments = function (count) {
-  var array = [];
+  var comments = [];
 
   for (var i = 0; i < count; i++) {
     var comment = {
@@ -30,29 +34,29 @@ var getRandomComments = function (count) {
       name: NAMES[getRandomElement(0, (NAMES.length - 1))]
     };
 
-    array.push(comment);
+    comments.push(comment);
   }
 
-  return array;
+  return comments;
 };
 
 var getDescriptionPhoto = function (count) {
-  var array = [];
+  var descriptions = [];
 
   for (var i = 1; i <= count; i++) {
-    var commentCount = getRandomElement(COMMENTS_MIN, COMMENTS_MAX);
+    var commentCount = getRandomElement(COMMENTS.MIN, COMMENTS.MAX);
 
     var description = {
       url: 'photos/' + i + '.jpg',
       description: 'описание- ' + i,
-      likes: getRandomElement(LIKES_MIN, LIKES_MAX),
+      likes: getRandomElement(LIKES.MIN, LIKES.MAX),
       comments: getRandomComments(commentCount)
     };
 
-    array.push(description);
+    descriptions.push(description);
   }
 
-  return array;
+  return descriptions;
 };
 
 var similarPhotoTemplate = document.querySelector('#picture')
