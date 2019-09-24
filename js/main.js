@@ -30,16 +30,6 @@ var hiddenElement = function (element, className) {
   element.classList.add(className);
 };
 
-var removeChildren = function (element) {
-  var children = element.children;
-
-  for (var i = children.length - 1; i >= 0; i--) {
-    var child = children[i];
-    child.parentElement.removeChild(child);
-  }
-
-};
-
 var getRandomElement = function (min, max) {
   var element = min + Math.random() * (max + 1 - min);
   return Math.floor(element);
@@ -131,7 +121,7 @@ var createPhotoContent = function (data) {
   document.querySelector('.likes-count').textContent = data.likes;
   document.querySelector('.comments-count').textContent = data.comments.length;
   var socialComments = document.querySelector('.social__comments');
-  removeChildren(socialComments);
+  socialComments.innerHTML = '';
 
   var comments = data.comments;
   for (var i = 0; i < comments.length; i++) {
