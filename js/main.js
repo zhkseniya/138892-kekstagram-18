@@ -16,11 +16,58 @@ var COMMENTS = {
   MIN: 1,
   MAX: 6
 };
+var KEYCODE = {
+  ESC: 27
+};
+var SCALE = {
+  MIN: 25,
+  MAX: 100,
+  STEP: 25
+};
+var HASHTAGSCOUNT = 5;
+var EFFECTSPARAMETERS = {
+  chrome: {
+    CLASS: 'effects__preview--chrome',
+    EFFECT: 'grayscale',
+    MIN: 0,
+    MAX: 1,
+    UNIT: ''
+  },
+  sepia: {
+    CLASS: 'effects__preview--sepia',
+    EFFECT: 'sepia',
+    MIN: 0,
+    MAX: 1,
+    UNIT: ''
+  },
+  marvin: {
+    CLASS: 'effects__preview--marvin',
+    EFFECT: 'invert',
+    MIN: 0,
+    MAX: 100,
+    UNIT: '%'
+  },
+  phobos: {
+    CLASS: 'effects__preview--phobos',
+    EFFECT: 'blur',
+    MIN: 0,
+    MAX: 3,
+    UNIT: 'px'
+  },
+  heat: {
+    CLASS: 'effects__preview--heat',
+    EFFECT: 'brightness',
+    MIN: 1,
+    MAX: 3,
+    UNIT: ''
+  }
+};
 
 var similarListElement = document.querySelector('.pictures');
 var bigPicture = document.querySelector('.big-picture');
 var commentCount = document.querySelector('.social__comment-count');
 var commentsLoader = document.querySelector('.comments-loader');
+var hashtags = document.querySelector('.text__hashtags');
 
 var showElement = function (element, className) {
   element.classList.remove(className);
@@ -83,12 +130,12 @@ var getPhotosElement = function (array) {
   return photoElement;
 };
 
-var renderPhotos = function (array) {
+var renderPhotos = function (arrayPhotos) {
   var fragment = document.createDocumentFragment();
 
-  for (var i = 0; i < array.length; i++) {
-    fragment.appendChild(getPhotosElement(array[i]));
-  }
+  arrayPhotos.forEach(function (photo) {
+    fragment.appendChild(getPhotosElement(photo));
+  });
 
   similarListElement.appendChild(fragment);
 };
@@ -138,3 +185,195 @@ showElement(bigPicture, 'hidden');
 createPhotoContent(photos[0]);
 hiddenElement(commentCount, 'visually-hidden');
 hiddenElement(commentsLoader, 'visually-hidden');
+hiddenElement(bigPicture, 'hidden');
+
+// Выбор изображения для загрузки осуществляется с помощью стандартного контрола загрузки файла #upload-file, который стилизован под букву «О» в логотипе.
+// После выбора изображения (изменения значения поля #upload-file), показывается форма редактирования изображения.
+var uploadFile = document.querySelector('#upload-file');
+var uploadCancel = document.querySelector('#upload-cancel');
+var imgUploadOverlay = document.querySelector('.img-upload__overlay');
+var imgUploadPreview = document.querySelector('.img-upload__preview img');
+var imgEffectsPreview = document.querySelectorAll('.effects__preview');
+
+var onUploadEscPress = function (evt) {
+  if (evt.keyCode === KEYCODE.ESC) {
+    closeUpload();
+  }
+};
+
+var openUpload = function () {
+  showElement(imgUploadOverlay, 'hidden');
+  document.addEventListener('keydown', onUploadEscPress);
+};
+
+var closeUpload = function () {
+  hiddenElement(imgUploadOverlay, 'hidden');
+  document.removeEventListener('keydown', onUploadEscPress);
+};
+
+uploadCancel.addEventListener('click', function () {
+  closeUpload();
+});
+
+var setPreviewImage = function (imgUpdate, imgFile, backgroundImg) {
+  var reader = new FileReader();
+  reader.onloadend = function () {
+    if (backgroundImg) {
+      imgUpdate.style.backgroundImage = 'url("' + reader.result + '")';
+    } else {
+      imgUpdate.src = reader.result;
+    }
+  };
+  if (imgFile.type.startsWith('image/')) {
+    reader.readAsDataURL(imgFile);
+  }
+};
+
+var onUploadFileChange = function () {
+  setPreviewImage(imgUploadPreview, uploadFile.files[0], false);
+
+  imgEffectsPreview.forEach(function (previewImg) {
+    setPreviewImage(previewImg, uploadFile.files[0], true);
+  });
+
+  openUpload();
+};
+
+uploadFile.addEventListener('change', onUploadFileChange);
+
+// 2.1. Масштаб:
+var scaleControlSmaller = document.querySelector('.scale__control--smaller');
+var scaleControlBigger = document.querySelector('.scale__control--bigger');
+var scaleControlValue = document.querySelector('.scale__control--value');
+
+var onScaleControlSmallerClick = function () {
+  var value = parseInt(scaleControlValue.value, 10);
+  if (value > SCALE.MIN) {
+    value -= SCALE.STEP;
+  }
+  scaleControlValue.value = value + '%';
+  imgUploadPreview.style.transform = 'scale(' + value / 100 + ')';
+};
+
+var onScaleControlBiggerClick = function () {
+  var value = parseInt(scaleControlValue.value, 10);
+  if (value < SCALE.MAX) {
+    value += SCALE.STEP;
+  }
+  scaleControlValue.value = value + '%';
+  imgUploadPreview.style.transform = 'scale(' + value / 100 + ')';
+};
+
+scaleControlSmaller.addEventListener('click', onScaleControlSmallerClick);
+scaleControlBigger.addEventListener('click', onScaleControlBiggerClick);
+
+// 2.2. Наложение эффекта на изображение:
+var effectLevel = document.querySelector('.effect-level');
+var effectPin = document.querySelector('.effect-level__pin');
+var effectDepth = document.querySelector('.effect-level__depth');
+var effectLine = document.querySelector('.effect-level__line');
+var effectValue = document.querySelector('input[name="effect-level"]');
+
+var getCoordsElement = function (elem) {
+  var boxCoords = elem.getBoundingClientRect();
+  return {
+    width: boxCoords.width,
+    left: boxCoords.left,
+    right: boxCoords.right
+  };
+};
+
+var getActiveCheckbox = function (checkboxName) {
+  var activeCheckbox;
+  for (var i = 0; i < checkboxName.length; i++) {
+    if (checkboxName[i].checked) {
+      activeCheckbox = checkboxName[i].value;
+      break;
+    }
+  }
+  return activeCheckbox;
+};
+
+var getPinPosition = function () {
+  var pinCords = getCoordsElement(effectPin);
+  var lineCords = getCoordsElement(effectLine);
+  var pinPosition = Math.round((pinCords.right - (pinCords.width / 2)) - lineCords.left);
+  var defaultValue = Math.round((pinPosition * 100) / lineCords.width);
+  return defaultValue;
+};
+
+var resetEffectFilter = function () {
+  effectValue.value = '100';
+  effectDepth.style.width = '100%';
+  effectPin.style.left = '100%';
+  imgUploadPreview.style.filter = 'none';
+};
+
+var changeEffectFilterValue = function (effect) {
+  var defaultPinPosition = getPinPosition();
+  var effectLevelValue = ((defaultPinPosition * EFFECTSPARAMETERS[effect].MAX) / 100);
+  imgUploadPreview.style.filter = EFFECTSPARAMETERS[effect].EFFECT + '(' + effectLevelValue + EFFECTSPARAMETERS[effect].UNIT + ')';
+  effectValue.value = effectLevelValue;
+};
+
+var calculateEffectLevel = function () {
+  var pinPosition = getPinPosition();
+  effectValue.value = pinPosition;
+  effectDepth.style.width = pinPosition + '%';
+  var effectName = getActiveCheckbox(effectsRadio);
+  changeEffectFilterValue(effectName);
+};
+
+var onEffectPinMouseup = function () {
+  calculateEffectLevel();
+};
+
+effectPin.addEventListener('mouseup', onEffectPinMouseup);
+
+var effectsRadio = document.querySelectorAll('.effects__radio');
+hiddenElement(effectLevel, 'hidden');
+
+var onEffectsRadioChange = function (evt) {
+  evt.preventDefault();
+  resetEffectFilter();
+  hiddenElement(effectLevel, 'hidden');
+  imgUploadPreview.classList = '';
+  if (evt.target.value !== 'none') {
+    imgUploadPreview.classList.toggle(EFFECTSPARAMETERS[evt.target.value].CLASS);
+    showElement(effectLevel, 'hidden');
+  }
+  changeEffectFilterValue(evt.target.value);
+};
+
+effectsRadio.forEach(function (button) {
+  button.addEventListener('change', onEffectsRadioChange);
+});
+
+// 2.3. хеш-теги
+var checkHashtags = function () {
+  var errorMessage = '';
+  var arrayHashtags = hashtags.value.toLowerCase().split(' ');
+
+  arrayHashtags.forEach(function (hashtag) {
+    if (hashtag.match(/^#/) !== null) {
+      errorMessage = 'хеш-тег должен начинаться с символа #';
+    } else if (hashtag.match(/#\\S{1,19}/g) !== null) {
+      errorMessage = 'минимальная длина хеш-тега - 2 символа, максимальная - 20 символов';
+    } else if (arrayHashtags.length > HASHTAGSCOUNT) {
+      errorMessage = 'Количесвто хэш-тегов не может быть больше 5';
+    } else {
+      errorMessage = '';
+    }
+  });
+
+  hashtags.setCustomValidity(errorMessage);
+};
+
+var onTextHashtagsChange = function () {
+  checkHashtags();
+};
+
+hashtags.addEventListener('input', onTextHashtagsChange);
+hashtags.addEventListener('focus', function () {
+  document.removeEventListener('keydown', onUploadEscPress);
+});
