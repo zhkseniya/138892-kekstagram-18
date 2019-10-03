@@ -242,30 +242,28 @@ var onUploadFileChange = function () {
 uploadFile.addEventListener('change', onUploadFileChange);
 
 // 2.1. Масштаб:
-var scaleControlSmaller = document.querySelector('.scale__control--smaller');
-var scaleControlBigger = document.querySelector('.scale__control--bigger');
+var scaleControl = document.querySelectorAll('button.scale__control');
 var scaleControlValue = document.querySelector('.scale__control--value');
 
-var onScaleControlSmallerClick = function () {
+var onScaleControlClick = function (evt) {
+  evt.preventDefault();
   var value = parseInt(scaleControlValue.value, 10);
-  if (value > SCALE.MIN) {
-    value -= SCALE.STEP;
+  if (evt.target.className.includes('smaller')) {
+    if (value > SCALE.MIN) {
+      value -= SCALE.STEP;
+    }
+  } else {
+    if (value < SCALE.MAX) {
+      value += SCALE.STEP;
+    }
   }
   scaleControlValue.value = value + '%';
   imgUploadPreview.style.transform = 'scale(' + value / 100 + ')';
 };
 
-var onScaleControlBiggerClick = function () {
-  var value = parseInt(scaleControlValue.value, 10);
-  if (value < SCALE.MAX) {
-    value += SCALE.STEP;
-  }
-  scaleControlValue.value = value + '%';
-  imgUploadPreview.style.transform = 'scale(' + value / 100 + ')';
-};
-
-scaleControlSmaller.addEventListener('click', onScaleControlSmallerClick);
-scaleControlBigger.addEventListener('click', onScaleControlBiggerClick);
+scaleControl.forEach(function (control) {
+  control.addEventListener('click', onScaleControlClick);
+});
 
 // 2.2. Наложение эффекта на изображение:
 var effectLevel = document.querySelector('.effect-level');
@@ -273,6 +271,7 @@ var effectPin = document.querySelector('.effect-level__pin');
 var effectDepth = document.querySelector('.effect-level__depth');
 var effectLine = document.querySelector('.effect-level__line');
 var effectValue = document.querySelector('input[name="effect-level"]');
+var effectsItem = document.querySelector('.effects__list');
 
 var getCoordsElement = function (elem) {
   var boxCoords = elem.getBoundingClientRect();
@@ -281,17 +280,6 @@ var getCoordsElement = function (elem) {
     left: boxCoords.left,
     right: boxCoords.right
   };
-};
-
-var getActiveCheckbox = function (checkboxName) {
-  var activeCheckbox;
-  for (var i = 0; i < checkboxName.length; i++) {
-    if (checkboxName[i].checked) {
-      activeCheckbox = checkboxName[i].value;
-      break;
-    }
-  }
-  return activeCheckbox;
 };
 
 var getPinPosition = function () {
@@ -320,8 +308,8 @@ var calculateEffectLevel = function () {
   var pinPosition = getPinPosition();
   effectValue.value = pinPosition;
   effectDepth.style.width = pinPosition + '%';
-  var effectName = getActiveCheckbox(effectsRadio);
-  changeEffectFilterValue(effectName);
+  var effectName = effectsItem.querySelector('input[name="effect"]:checked');
+  changeEffectFilterValue(effectName.value);
 };
 
 var onEffectPinMouseup = function () {
