@@ -338,19 +338,31 @@ effectsRadio.forEach(function (button) {
 });
 
 // 2.3. хеш-теги
+var getDuplicateHashtags = function (arrayElements) {
+  for (var i = 0; i < arrayElements.length; i++) {
+    for (var j = i + 1; j < arrayElements.length; j++) {
+      if (arrayElements[j] === arrayElements[i]) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
 var checkHashtags = function () {
   var errorMessage = '';
   var arrayHashtags = hashtags.value.toLowerCase().split(' ');
-
   arrayHashtags.forEach(function (hashtag) {
-    if (hashtag.match(/^#/) !== null) {
+    if (!hashtag.match(/^#/)) {
       errorMessage = 'хеш-тег должен начинаться с символа #';
-    } else if (hashtag.match(/#\\S{1,19}/g) !== null) {
+    } else if (!hashtag.match(/^#[\S]{1,19}$/)) {
       errorMessage = 'минимальная длина хеш-тега - 2 символа, максимальная - 20 символов';
+    } else if (!hashtag.match(/^#[^#\s]{1,19}$/)) {
+      errorMessage = 'в хеш-теге может быть не больше одного символа #';
     } else if (arrayHashtags.length > HASHTAGSCOUNT) {
-      errorMessage = 'Количесвто хэш-тегов не может быть больше 5';
-    } else {
-      errorMessage = '';
+      errorMessage = 'количесвто хэш-тегов не может быть больше 5';
+    } else if (getDuplicateHashtags(arrayHashtags)) {
+      errorMessage = 'один и тот же хэш-тег не может быть использован больше одного раза';
     }
   });
 
@@ -362,6 +374,7 @@ var onTextHashtagsChange = function () {
 };
 
 hashtags.addEventListener('input', onTextHashtagsChange);
+hashtags.addEventListener('change', onTextHashtagsChange);
 hashtags.addEventListener('focus', function () {
   document.removeEventListener('keydown', onUploadEscPress);
 });
