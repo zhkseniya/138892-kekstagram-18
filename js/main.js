@@ -352,16 +352,19 @@ var getDuplicateHashtags = function (arrayElements) {
 var checkHashtags = function () {
   var errorMessage = '';
   var arrayHashtags = hashtags.value.toLowerCase().split(' ');
-  arrayHashtags.forEach(function (hashtag) {
+  var cleanArray = arrayHashtags.filter(function (item) {
+    return item !== '';
+  });
+  cleanArray.forEach(function (hashtag) {
     if (!hashtag.match(/^#/)) {
       errorMessage = 'хеш-тег должен начинаться с символа #';
     } else if (!hashtag.match(/^#[\S]{1,19}$/)) {
       errorMessage = 'минимальная длина хеш-тега - 2 символа, максимальная - 20 символов';
     } else if (!hashtag.match(/^#[^#\s]{1,19}$/)) {
       errorMessage = 'в хеш-теге может быть не больше одного символа #';
-    } else if (arrayHashtags.length > HASHTAGSCOUNT) {
+    } else if (cleanArray.length > HASHTAGSCOUNT) {
       errorMessage = 'количесвто хэш-тегов не может быть больше 5';
-    } else if (getDuplicateHashtags(arrayHashtags)) {
+    } else if (getDuplicateHashtags(cleanArray)) {
       errorMessage = 'один и тот же хэш-тег не может быть использован больше одного раза';
     }
   });
