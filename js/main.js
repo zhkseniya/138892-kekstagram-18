@@ -381,3 +381,18 @@ hashtags.addEventListener('change', onTextHashtagsChange);
 hashtags.addEventListener('focus', function () {
   document.removeEventListener('keydown', onUploadEscPress);
 });
+
+// 2.4. Комментарий
+var description = document.querySelector('.text__description');
+
+description.addEventListener('invalid', function () {
+  if (description.validity.tooLong) {
+    description.setCustomValidity('Комментарий не должен превышать 140-ка символов');
+  } else {
+    description.setCustomValidity('');
+  }
+});
+
+description.addEventListener('focus', function () {
+  document.removeEventListener('keydown', onUploadEscPress);
+});
