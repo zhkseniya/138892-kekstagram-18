@@ -252,6 +252,7 @@ var openUpload = function () {
 };
 
 var closeUpload = function () {
+  uploadFile.value = '';
   hiddenElement(imgUploadOverlay, 'hidden');
   document.removeEventListener('keydown', onUploadEscPress);
 };
@@ -423,8 +424,11 @@ var onTextHashtagsChange = function () {
 
 hashtags.addEventListener('input', onTextHashtagsChange);
 hashtags.addEventListener('change', onTextHashtagsChange);
-hashtags.addEventListener('focus', function () {
+hashtags.addEventListener('focusin', function () {
   document.removeEventListener('keydown', onUploadEscPress);
+});
+hashtags.addEventListener('focusout', function () {
+  document.addEventListener('keydown', onUploadEscPress);
 });
 
 // 2.4. Комментарий
@@ -438,6 +442,9 @@ description.addEventListener('invalid', function () {
   }
 });
 
-description.addEventListener('focus', function () {
+description.addEventListener('focusin', function () {
   document.removeEventListener('keydown', onUploadEscPress);
+});
+description.addEventListener('focusout', function () {
+  document.addEventListener('keydown', onUploadEscPress);
 });
