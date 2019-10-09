@@ -181,12 +181,12 @@ var createPhotoContent = function (data) {
   document.querySelector('.social__caption').textContent = data.description;
 };
 
-// просмотр любой фотографии в полноразмерном режиме;
+//  просмотр любой фотографии в полноразмерном режиме;
 var photos = getDescriptionPhoto(PHOTOS_COUNT);
 renderPhotos(photos);
 var picturesLink = document.querySelectorAll('.picture');
 
-//открытие окна полноразмерного просмотра
+//  открытие окна полноразмерного просмотра
 var onPictureEnterPress = function (evt) {
   if (evt.keyCode === KEYCODE.ENTER) {
     openBigPicture(evt.target.querySelector('.picture__img'));
@@ -195,10 +195,8 @@ var onPictureEnterPress = function (evt) {
 
 var openBigPicture = function (element) {
   var photoSrc = new URL(element.src);
-  var photoData = photos.filter(function (item){
-    if(item.url === photoSrc.pathname.replace(/^\//, '')) {
-      return true;
-    }
+  var photoData = photos.filter(function (item) {
+    return item.url === photoSrc.pathname.replace(/^\//, '');
   });
   showElement(bigPicture, 'hidden');
   createPhotoContent(photoData[0]);
@@ -217,7 +215,7 @@ picturesLink.forEach(function (photo) {
   photo.addEventListener('keydown', onPictureEnterPress);
 });
 
-//закрытие окна полноразмерного просмотра
+//  закрытие окна полноразмерного просмотра
 var bigPictureCancel = document.querySelector('.big-picture__cancel');
 
 var onBigPictrueCancelPress = function (evt) {
