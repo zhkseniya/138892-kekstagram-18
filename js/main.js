@@ -17,7 +17,8 @@ var COMMENTS = {
   MAX: 6
 };
 var KEYCODE = {
-  ESC: 27
+  ESC: 27,
+  ENTER: 13
 };
 var SCALE = {
   MIN: 25,
@@ -25,6 +26,14 @@ var SCALE = {
   STEP: 25
 };
 var HASHTAGSCOUNT = 5;
+var REGEXHASHTAG = {
+  SYMBOL: /^#/,
+  LENGTH: /^#[\S]{1,19}$/,
+  DUPLICATE: /^#[^#\s]{1,19}$/
+};
+var REGEXURL = {
+  PATHNAME: /^\//
+};
 var EFFECTSPARAMETERS = {
   chrome: {
     CLASS: 'effects__preview--chrome',
@@ -126,6 +135,7 @@ var getPhotosElement = function (array) {
   photoElement.querySelector('.picture__img').src = array.url;
   photoElement.querySelector('.picture__likes').textContent = array.likes;
   photoElement.querySelector('.picture__comments').textContent = array.comments.length;
+  photoElement.querySelector('.picture').setAttribute('tabindex', '0');
 
   return photoElement;
 };
@@ -179,16 +189,59 @@ var createPhotoContent = function (data) {
   document.querySelector('.social__caption').textContent = data.description;
 };
 
+//  просмотр любой фотографии в полноразмерном режиме;
 var photos = getDescriptionPhoto(PHOTOS_COUNT);
 renderPhotos(photos);
-showElement(bigPicture, 'hidden');
-createPhotoContent(photos[0]);
-hiddenElement(commentCount, 'visually-hidden');
-hiddenElement(commentsLoader, 'visually-hidden');
-hiddenElement(bigPicture, 'hidden');
+var picturesLink = document.querySelectorAll('.picture');
 
-// Выбор изображения для загрузки осуществляется с помощью стандартного контрола загрузки файла #upload-file, который стилизован под букву «О» в логотипе.
-// После выбора изображения (изменения значения поля #upload-file), показывается форма редактирования изображения.
+//  открытие окна полноразмерного просмотра
+var onPictureEnterPress = function (evt) {
+  if (evt.keyCode === KEYCODE.ENTER) {
+    openBigPicture(evt.target.querySelector('.picture__img'));
+  }
+};
+
+var openBigPicture = function (element) {
+  var photoSrc = new URL(element.src);
+  var photoData = photos.filter(function (item) {
+    return item.url === photoSrc.pathname.replace(REGEXURL.PATHNAME, '');
+  });
+  showElement(bigPicture, 'hidden');
+  createPhotoContent(photoData[0]);
+  hiddenElement(commentCount, 'visually-hidden');
+  hiddenElement(commentsLoader, 'visually-hidden');
+  document.addEventListener('keydown', onBigPictrueCancelPress);
+};
+
+var onPictureClick = function (evt) {
+  evt.preventDefault();
+  openBigPicture(evt.target);
+};
+
+picturesLink.forEach(function (photo) {
+  photo.addEventListener('click', onPictureClick);
+  photo.addEventListener('keydown', onPictureEnterPress);
+});
+
+//  закрытие окна полноразмерного просмотра
+var bigPictureCancel = document.querySelector('.big-picture__cancel');
+
+var onBigPictrueCancelPress = function (evt) {
+  if (evt.keyCode === KEYCODE.ESC) {
+    closeBigPicture();
+  }
+};
+
+var closeBigPicture = function () {
+  hiddenElement(bigPicture, 'hidden');
+  document.removeEventListener('keydown', onBigPictrueCancelPress);
+};
+
+bigPictureCancel.addEventListener('click', function () {
+  closeBigPicture();
+});
+
+// Выбор изображения для загрузки
 var uploadFile = document.querySelector('#upload-file');
 var uploadCancel = document.querySelector('#upload-cancel');
 var imgUploadOverlay = document.querySelector('.img-upload__overlay');
@@ -207,6 +260,7 @@ var openUpload = function () {
 };
 
 var closeUpload = function () {
+  uploadFile.value = '';
   hiddenElement(imgUploadOverlay, 'hidden');
   document.removeEventListener('keydown', onUploadEscPress);
 };
@@ -356,11 +410,11 @@ var checkHashtags = function () {
     return item !== '';
   });
   cleanArray.forEach(function (hashtag) {
-    if (!hashtag.match(/^#/)) {
+    if (!hashtag.match(REGEXHASHTAG.SYMBOL)) {
       errorMessage = 'хеш-тег должен начинаться с символа #';
-    } else if (!hashtag.match(/^#[\S]{1,19}$/)) {
+    } else if (!hashtag.match(REGEXHASHTAG.LENGTH)) {
       errorMessage = 'минимальная длина хеш-тега - 2 символа, максимальная - 20 символов';
-    } else if (!hashtag.match(/^#[^#\s]{1,19}$/)) {
+    } else if (!hashtag.match(REGEXHASHTAG.DUPLICATE)) {
       errorMessage = 'в хеш-теге может быть не больше одного символа #';
     } else if (cleanArray.length > HASHTAGSCOUNT) {
       errorMessage = 'количесвто хэш-тегов не может быть больше 5';
@@ -378,6 +432,27 @@ var onTextHashtagsChange = function () {
 
 hashtags.addEventListener('input', onTextHashtagsChange);
 hashtags.addEventListener('change', onTextHashtagsChange);
-hashtags.addEventListener('focus', function () {
+hashtags.addEventListener('focusin', function () {
   document.removeEventListener('keydown', onUploadEscPress);
+});
+hashtags.addEventListener('focusout', function () {
+  document.addEventListener('keydown', onUploadEscPress);
+});
+
+// 2.4. Комментарий
+var description = document.querySelector('.text__description');
+
+description.addEventListener('invalid', function () {
+  if (description.validity.tooLong) {
+    description.setCustomValidity('Комментарий не должен превышать 140-ка символов');
+  } else {
+    description.setCustomValidity('');
+  }
+});
+
+description.addEventListener('focusin', function () {
+  document.removeEventListener('keydown', onUploadEscPress);
+});
+description.addEventListener('focusout', function () {
+  document.addEventListener('keydown', onUploadEscPress);
 });
