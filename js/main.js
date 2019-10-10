@@ -26,6 +26,14 @@ var SCALE = {
   STEP: 25
 };
 var HASHTAGSCOUNT = 5;
+var REGEXHASHTAG = {
+  SYMBOL: /^#/,
+  LENGTH: /^#[\S]{1,19}$/,
+  DUPLICATE: /^#[^#\s]{1,19}$/
+};
+var REGEXURL = {
+  PATHNAME: /^\//
+};
 var EFFECTSPARAMETERS = {
   chrome: {
     CLASS: 'effects__preview--chrome',
@@ -196,7 +204,7 @@ var onPictureEnterPress = function (evt) {
 var openBigPicture = function (element) {
   var photoSrc = new URL(element.src);
   var photoData = photos.filter(function (item) {
-    return item.url === photoSrc.pathname.replace(/^\//, '');
+    return item.url === photoSrc.pathname.replace(REGEXURL.PATHNAME, '');
   });
   showElement(bigPicture, 'hidden');
   createPhotoContent(photoData[0]);
@@ -402,11 +410,11 @@ var checkHashtags = function () {
     return item !== '';
   });
   cleanArray.forEach(function (hashtag) {
-    if (!hashtag.match(/^#/)) {
+    if (!hashtag.match(REGEXHASHTAG.SYMBOL)) {
       errorMessage = 'хеш-тег должен начинаться с символа #';
-    } else if (!hashtag.match(/^#[\S]{1,19}$/)) {
+    } else if (!hashtag.match(REGEXHASHTAG.LENGTH)) {
       errorMessage = 'минимальная длина хеш-тега - 2 символа, максимальная - 20 символов';
-    } else if (!hashtag.match(/^#[^#\s]{1,19}$/)) {
+    } else if (!hashtag.match(REGEXHASHTAG.DUPLICATE)) {
       errorMessage = 'в хеш-теге может быть не больше одного символа #';
     } else if (cleanArray.length > HASHTAGSCOUNT) {
       errorMessage = 'количесвто хэш-тегов не может быть больше 5';
