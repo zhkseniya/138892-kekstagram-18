@@ -30,4 +30,6 @@ window.picture = (function () {
 
   var photos = window.gallery.getDescriptionPhoto(window.data.PHOTOS_COUNT);
   renderPhotos(photos);
+
+  return photos;
 })();

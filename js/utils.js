@@ -30,10 +30,8 @@ window.utils = (function () {
         action();
       }
     },
-    isEnterEvent: function (evt, action) {
-      if (evt.keyCode === KEYCODE.ENTER) {
-        action();
-      }
+    isEnterEvent: function (evt) {
+      return evt.keyCode === KEYCODE.ENTER;
     }
   };
 })();

@@ -17,9 +17,11 @@ window.preview = (function () {
     socialCaption: '.social__caption'
   };
 
+  var photos = window.picture;
+
   //  открытие окна полноразмерного просмотра
   var onPictureEnterPress = function (evt) {
-    if (evt.keyCode === KEYCODE.ENTER) {
+    if (window.utils.isEnterEvent(evt)) {
       openBigPicture(evt.target.querySelector('.picture__img'));
     }
   };
@@ -43,16 +45,14 @@ window.preview = (function () {
 
   picturesLink.forEach(function (photo) {
     photo.addEventListener('click', onPictureClick);
-    photo.addEventListener('keydown', function (evt) {
-      window.util.isEnterEvent(evt, onPictureEnterPress);
-    });
+    photo.addEventListener('keydown', onPictureEnterPress);
   });
 
   //  закрытие окна полноразмерного просмотра
   var bigPictureCancel = document.querySelector('.big-picture__cancel');
 
   var onBigPictrueCancelPress = function (evt) {
-    window.util.isEscEvent(evt, closeBigPicture);
+    window.utils.isEscEvent(evt, closeBigPicture);
   };
 
   var closeBigPicture = function () {

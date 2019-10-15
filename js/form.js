@@ -73,15 +73,13 @@ window.form = (function () {
   var description = document.querySelector('.text__description');
 
   var onUploadEscPress = function (evt) {
-    window.util.isEscEvent(evt, closeUpload);
+    window.utils.isEscEvent(evt, closeUpload);
   };
 
   // загрузка файла
   var openUpload = function () {
     window.utils.showElement(imgUploadOverlay, 'hidden');
-    document.addEventListener('keydown', function (evt) {
-      window.utils.isEscEvent(evt, closeUpload);
-    });
+    document.addEventListener('keydown', onUploadEscPress);
   };
 
   var closeUpload = function () {
