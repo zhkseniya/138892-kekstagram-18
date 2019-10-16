@@ -6,13 +6,13 @@ window.form = (function () {
     MAX: 100,
     STEP: 25
   };
-  var HASHTAGSCOUNT = 5;
-  var REGEXHASHTAG = {
+  var HASHTAGS_COUNT = 5;
+  var REGEX_HASHTAG = {
     SYMBOL: /^#/,
     LENGTH: /^#[\S]{1,19}$/,
     DUPLICATE: /^#[^#\s]{1,19}$/
   };
-  var EFFECTSPARAMETERS = {
+  var EFFECTS_PARAMETERS = {
     chrome: {
       CLASS: 'effects__preview--chrome',
       EFFECT: 'grayscale',
@@ -164,8 +164,8 @@ window.form = (function () {
 
   var changeEffectFilterValue = function (effect) {
     var defaultPinPosition = getPinPosition();
-    var effectLevelValue = ((defaultPinPosition * EFFECTSPARAMETERS[effect].MAX) / 100);
-    imgUploadPreview.style.filter = EFFECTSPARAMETERS[effect].EFFECT + '(' + effectLevelValue + EFFECTSPARAMETERS[effect].UNIT + ')';
+    var effectLevelValue = ((defaultPinPosition * EFFECTS_PARAMETERS[effect].MAX) / 100);
+    imgUploadPreview.style.filter = EFFECTS_PARAMETERS[effect].EFFECT + '(' + effectLevelValue + EFFECTS_PARAMETERS[effect].UNIT + ')';
     effectValue.value = effectLevelValue;
   };
 
@@ -190,7 +190,7 @@ window.form = (function () {
     window.utils.hiddenElement(effectLevel, 'hidden');
     imgUploadPreview.classList = '';
     if (evt.target.value !== 'none') {
-      imgUploadPreview.classList.toggle(EFFECTSPARAMETERS[evt.target.value].CLASS);
+      imgUploadPreview.classList.toggle(EFFECTS_PARAMETERS[evt.target.value].CLASS);
       window.utils.showElement(effectLevel, 'hidden');
     }
     changeEffectFilterValue(evt.target.value);
@@ -219,13 +219,13 @@ window.form = (function () {
       return item !== '';
     });
     cleanArray.forEach(function (hashtag) {
-      if (!hashtag.match(REGEXHASHTAG.SYMBOL)) {
+      if (!hashtag.match(REGEX_HASHTAG.SYMBOL)) {
         errorMessage = 'хеш-тег должен начинаться с символа #';
-      } else if (!hashtag.match(REGEXHASHTAG.LENGTH)) {
+      } else if (!hashtag.match(REGEX_HASHTAG.LENGTH)) {
         errorMessage = 'минимальная длина хеш-тега - 2 символа, максимальная - 20 символов';
-      } else if (!hashtag.match(REGEXHASHTAG.DUPLICATE)) {
+      } else if (!hashtag.match(REGEX_HASHTAG.DUPLICATE)) {
         errorMessage = 'в хеш-теге может быть не больше одного символа #';
-      } else if (cleanArray.length > HASHTAGSCOUNT) {
+      } else if (cleanArray.length > HASHTAGS_COUNT) {
         errorMessage = 'количесвто хэш-тегов не может быть больше 5';
       } else if (getDuplicateHashtags(cleanArray)) {
         errorMessage = 'один и тот же хэш-тег не может быть использован больше одного раза';
