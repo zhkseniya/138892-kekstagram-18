@@ -6,6 +6,10 @@ window.form = (function () {
     MAX: 100,
     STEP: 25
   };
+  var PIN = {
+    MIN: 0,
+    MAX: 100
+  };
   var HASHTAGS_COUNT = 5;
   var REGEX_HASHTAG = {
     SYMBOL: /^#/,
@@ -138,23 +142,6 @@ window.form = (function () {
   });
 
   // 2.2. Наложение эффекта на изображение:
-  var getCoordsElement = function (elem) {
-    var boxCoords = elem.getBoundingClientRect();
-    return {
-      width: boxCoords.width,
-      left: boxCoords.left,
-      right: boxCoords.right
-    };
-  };
-
-  var getPinPosition = function () {
-    var pinCords = getCoordsElement(effectPin);
-    var lineCords = getCoordsElement(effectLine);
-    var pinPosition = Math.round((pinCords.right - (pinCords.width / 2)) - lineCords.left);
-    var defaultValue = Math.round((pinPosition * 100) / lineCords.width);
-    return defaultValue;
-  };
-
   var resetEffectFilter = function () {
     effectValue.value = '100';
     effectDepth.style.width = '100%';
@@ -162,26 +149,53 @@ window.form = (function () {
     imgUploadPreview.style.filter = 'none';
   };
 
-  var changeEffectFilterValue = function (effect) {
-    var defaultPinPosition = getPinPosition();
-    var effectLevelValue = ((defaultPinPosition * EFFECTS_PARAMETERS[effect].MAX) / 100);
+  var changeEffectFilterValue = function (effect, position) {
+    var effectLevelValue = ((position * EFFECTS_PARAMETERS[effect].MAX) / 100);
     imgUploadPreview.style.filter = EFFECTS_PARAMETERS[effect].EFFECT + '(' + effectLevelValue + EFFECTS_PARAMETERS[effect].UNIT + ')';
     effectValue.value = effectLevelValue;
   };
 
-  var calculateEffectLevel = function () {
-    var pinPosition = getPinPosition();
+  var calculateEffectLevel = function (pinPosition) {
     effectValue.value = pinPosition;
     effectDepth.style.width = pinPosition + '%';
+    effectPin.style.left = pinPosition + '%';
     var effectName = effectsItem.querySelector('input[name="effect"]:checked');
-    changeEffectFilterValue(effectName.value);
+    changeEffectFilterValue(effectName.value, pinPosition);
   };
 
-  var onEffectPinMouseup = function () {
-    calculateEffectLevel();
+  var onEffectPinMouseDown = function (evt) {
+    evt.preventDefault();
+
+    var startCoordsX = evt.clientX;
+
+    var onEffectPinMouseMove = function (moveEvt) {
+      moveEvt.preventDefault();
+      var sliderEffectLineRect = effectLine.getBoundingClientRect();
+      var shiftX = startCoordsX - moveEvt.clientX;
+      startCoordsX = moveEvt.clientX;
+      var movePinPosition = Math.round((effectPin.offsetLeft - shiftX) / sliderEffectLineRect.width * 100);
+
+      if (movePinPosition <= PIN.MIN) {
+        movePinPosition = PIN.MIN;
+      } else if (movePinPosition >= PIN.MAX) {
+        movePinPosition = PIN.MAX;
+      }
+
+      calculateEffectLevel(movePinPosition);
+    };
+
+    var onEffectPinMouseUp = function (upEvt) {
+      upEvt.preventDefault();
+
+      document.removeEventListener('mousemove', onEffectPinMouseMove);
+      document.removeEventListener('mouseup', onEffectPinMouseUp);
+    };
+
+    document.addEventListener('mousemove', onEffectPinMouseMove);
+    document.addEventListener('mouseup', onEffectPinMouseUp);
   };
 
-  effectPin.addEventListener('mouseup', onEffectPinMouseup);
+  effectPin.addEventListener('mousedown', onEffectPinMouseDown);
   window.utils.hiddenElement(effectLevel, 'hidden');
 
   var onEffectsRadioChange = function (evt) {
@@ -192,8 +206,8 @@ window.form = (function () {
     if (evt.target.value !== 'none') {
       imgUploadPreview.classList.toggle(EFFECTS_PARAMETERS[evt.target.value].CLASS);
       window.utils.showElement(effectLevel, 'hidden');
+      changeEffectFilterValue(evt.target.value, PIN.MAX);
     }
-    changeEffectFilterValue(evt.target.value);
   };
 
   effectsRadio.forEach(function (button) {
