@@ -1,13 +1,17 @@
 'use strict';
 
 window.preview = (function () {
+  var COMMENTS = {
+    MIN: 0,
+    MAX: 5
+  };
   var REGEXURL = {
     PATHNAME: /^\//
   };
   var bigPicture = document.querySelector('.big-picture');
-  var commentCount = document.querySelector('.social__comment-count');
-  var picturesLink = document.querySelectorAll('.picture');
+  var picturesBlock = document.querySelector('.pictures');
   var commentsLoader = document.querySelector('.comments-loader');
+  var body = document.querySelector('body');
 
   var selectorList = {
     picture: '.big-picture__img img',
@@ -17,7 +21,59 @@ window.preview = (function () {
     socialCaption: '.social__caption'
   };
 
-  var photos = window.picture;
+  var createComment = function (comment) {
+    var listItem = window.utils.makeElement('li', 'social__comment');
+
+    var avatar = window.utils.makeElement('img', 'social__picture');
+    avatar.src = comment.avatar;
+    avatar.alt = comment.name;
+    listItem.appendChild(avatar);
+
+    var text = window.utils.makeElement('p', 'social__text', comment.message);
+    listItem.appendChild(text);
+
+    return listItem;
+  };
+
+  var getComments = function (arrayComments, commentsBlock) {
+
+    arrayComments.forEach(function (comment, index) {
+      var commentsItem = createComment(comment);
+      commentsBlock.appendChild(commentsItem);
+      if (index >= COMMENTS.MAX) {
+        window.utils.hiddenElement(commentsItem, 'visually-hidden');
+      }
+    });
+  };
+
+  var onLoadCommentsClick = function (evt) {
+    var commentHiddenElements = evt.target.offsetParent.querySelectorAll('.social__comment.visually-hidden');
+    var arrayHiddenElements = [].slice.call(commentHiddenElements, COMMENTS.MIN, COMMENTS.MAX);
+    arrayHiddenElements.forEach(function (comment) {
+      window.utils.showElement(comment, 'visually-hidden');
+    });
+    if (commentHiddenElements.length <= COMMENTS.MAX) {
+      window.utils.hiddenElement(evt.target, 'visually-hidden');
+    }
+  };
+
+  var createPhotoContent = function (data, selectorsList) {
+    document.querySelector(selectorsList.picture).src = data.url;
+    document.querySelector(selectorsList.likesCount).textContent = data.likes;
+    document.querySelector(selectorsList.commentsCount).textContent = data.comments.length;
+    var socialComments = document.querySelector(selectorsList.socialComment);
+    socialComments.innerHTML = '';
+
+    getComments(data.comments, socialComments);
+    document.querySelector(selectorsList.socialCaption).textContent = data.description;
+
+    window.utils.hiddenElement(commentsLoader, 'visually-hidden');
+    if (data.comments.length > COMMENTS.MAX) {
+      window.utils.showElement(commentsLoader, 'visually-hidden');
+    }
+  };
+
+  commentsLoader.addEventListener('click', onLoadCommentsClick);
 
   //  открытие окна полноразмерного просмотра
   var onPictureEnterPress = function (evt) {
@@ -28,25 +84,22 @@ window.preview = (function () {
 
   var openBigPicture = function (element) {
     var photoSrc = new URL(element.src);
-    var photoData = photos.filter(function (item) {
+    var photoData = window.photos.filter(function (item) {
       return item.url === photoSrc.pathname.replace(REGEXURL.PATHNAME, '');
     });
     window.utils.showElement(bigPicture, 'hidden');
-    window.gallery.createPhotoContent(photoData[0], selectorList);
-    window.utils.hiddenElement(commentCount, 'visually-hidden');
-    window.utils.hiddenElement(commentsLoader, 'visually-hidden');
+    createPhotoContent(photoData[0], selectorList);
+    body.classList.add('modal-open');
     document.addEventListener('keydown', onBigPictrueCancelPress);
   };
 
-  var onPictureClick = function (evt) {
+  var onPicturesBlockClick = function (evt) {
     evt.preventDefault();
     openBigPicture(evt.target);
   };
 
-  picturesLink.forEach(function (photo) {
-    photo.addEventListener('click', onPictureClick);
-    photo.addEventListener('keydown', onPictureEnterPress);
-  });
+  picturesBlock.addEventListener('click', onPicturesBlockClick);
+  picturesBlock.addEventListener('keydown', onPictureEnterPress);
 
   //  закрытие окна полноразмерного просмотра
   var bigPictureCancel = document.querySelector('.big-picture__cancel');
@@ -57,6 +110,7 @@ window.preview = (function () {
 
   var closeBigPicture = function () {
     window.utils.hiddenElement(bigPicture, 'hidden');
+    body.classList.remove('modal-open');
     document.removeEventListener('keydown', onBigPictrueCancelPress);
   };
 
