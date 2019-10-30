@@ -16,6 +16,7 @@ window.form = (function () {
     LENGTH: /^#[\S]{1,19}$/,
     DUPLICATE: /^#[^#\s]{1,19}$/
   };
+  var DEFAULT_EFFECT = 'none';
   var EFFECTS_PARAMETERS = {
     chrome: {
       CLASS: 'effects__preview--chrome',
@@ -54,6 +55,10 @@ window.form = (function () {
     }
   };
 
+  // форма
+  // var form = document.querySelector('#upload-select-image');
+  var form = document.querySelector('#upload-select-image');
+  var submitButton = document.querySelector('.img-upload__submit');
   // загрузка файла
   var uploadFile = document.querySelector('#upload-file');
   var uploadCancel = document.querySelector('#upload-cancel');
@@ -71,6 +76,7 @@ window.form = (function () {
   var effectValue = document.querySelector('input[name="effect-level"]');
   var effectsItem = document.querySelector('.effects__list');
   var effectsRadio = document.querySelectorAll('.effects__radio');
+  var defaultEffect = document.querySelector('#effect-' + DEFAULT_EFFECT);
   // хеш-тэги
   var hashtags = document.querySelector('.text__hashtags');
   // комментарии
@@ -88,8 +94,10 @@ window.form = (function () {
 
   var closeUpload = function () {
     uploadFile.value = '';
+    defaultEffect.checked = true;
     window.utils.hiddenElement(imgUploadOverlay, 'hidden');
     document.removeEventListener('keydown', onUploadEscPress);
+    submitButton.disabled = false;
   };
 
   uploadCancel.addEventListener('click', closeUpload);
@@ -108,7 +116,8 @@ window.form = (function () {
     }
   };
 
-  var onUploadFileChange = function () {
+  var onUploadFileChange = function (evt) {
+    evt.preventDefault();
     setPreviewImage(imgUploadPreview, uploadFile.files[0], false);
 
     imgEffectsPreview.forEach(function (previewImg) {
@@ -203,7 +212,7 @@ window.form = (function () {
     resetEffectFilter();
     window.utils.hiddenElement(effectLevel, 'hidden');
     imgUploadPreview.classList = '';
-    if (evt.target.value !== 'none') {
+    if (evt.target.value !== DEFAULT_EFFECT) {
       imgUploadPreview.classList.toggle(EFFECTS_PARAMETERS[evt.target.value].CLASS);
       window.utils.showElement(effectLevel, 'hidden');
       changeEffectFilterValue(evt.target.value, PIN.MAX);
@@ -276,5 +285,24 @@ window.form = (function () {
   });
   description.addEventListener('focusout', function () {
     document.addEventListener('keydown', onUploadEscPress);
+  });
+
+  var successHandler = function () {
+    closeUpload();
+    resetEffectFilter();
+    window.message.showSuccesMessage();
+  };
+
+  var errorHandler = function (errorMessage) {
+    closeUpload();
+    resetEffectFilter();
+    window.message.showErrorMessage(errorMessage);
+  };
+
+  // отправка формы
+  form.addEventListener('submit', function (evt) {
+    window.backend.upload(new FormData(form), successHandler, errorHandler);
+    submitButton.disabled = true;
+    evt.preventDefault();
   });
 })();
