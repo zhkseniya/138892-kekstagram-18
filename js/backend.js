@@ -16,7 +16,6 @@ window.backend = (function () {
 
     xhr.addEventListener('load', function () {
       if (xhr.status === STATUS.OK) {
-        console.log(xhr.response);
         onSuccess(xhr.response);
       } else {
         onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);

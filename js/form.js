@@ -290,7 +290,7 @@ window.form = (function () {
   var successHandler = function () {
     closeUpload();
     resetEffectFilter();
-    window.message.showSuccesMessage();
+    window.success.showSuccesMessage();
   };
 
   var errorHandler = function (errorMessage) {
