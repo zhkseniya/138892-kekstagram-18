@@ -93,13 +93,21 @@ window.preview = (function () {
     document.addEventListener('keydown', onBigPictrueCancelPress);
   };
 
-  var onPicturesBlockClick = function (evt) {
-    evt.preventDefault();
-    openBigPicture(evt.target);
+  var onPicturesBlockClick = function (element) {
+    openBigPicture(element);
   };
 
-  picturesBlock.addEventListener('click', onPicturesBlockClick);
-  picturesBlock.addEventListener('keydown', onPictureEnterPress);
+  picturesBlock.addEventListener('click', function (evt) {
+    if (evt.target.className === 'picture__img') {
+      evt.preventDefault();
+      onPicturesBlockClick(evt.target);
+    }
+  });
+  picturesBlock.addEventListener('keydown', function (evt) {
+    if (evt.target.className === 'picture__img') {
+      onPictureEnterPress(evt);
+    }
+  });
 
   //  закрытие окна полноразмерного просмотра
   var bigPictureCancel = document.querySelector('.big-picture__cancel');
