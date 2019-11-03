@@ -3,7 +3,22 @@
 (function () {
   window.photos = [];
 
+  var FILTERS_CLASS = {
+    REMOVE: 'img-filters--inactive',
+    ACTIVE_BUTTON: 'img-filters__button--active'
+  };
+
+  var FILTER_OPTIONS = {
+    'filter-popular': 'renderPhotos',
+    'filter-random': 'getRandomPhotos',
+    'filter-discussed': 'getDiscussedPhotos'
+  };
+
   var similarListElement = document.querySelector('.pictures');
+
+  // фильтры
+  var filtersBlock = document.querySelector('.img-filters');
+  var filtersButton = document.querySelectorAll('.img-filters__button');
 
   var similarPhotoTemplate = document.querySelector('#picture')
   .content;
@@ -19,16 +34,38 @@
     return photoElement;
   };
 
-  var successHandler = function (arrayPhotos) {
-    window.photos = arrayPhotos;
-
+  var renderPhotos = function (photos) {
     var fragment = document.createDocumentFragment();
 
-    window.photos.forEach(function (photo) {
+    photos.forEach(function (photo) {
       fragment.appendChild(getPhotosElement(photo));
     });
 
     similarListElement.appendChild(fragment);
+  };
+
+  // действия с фильтрами
+  var changeActiveButton = function (activeButton) {
+    var oldActiveButton = filtersBlock.querySelector('.' + FILTERS_CLASS.ACTIVE_BUTTON);
+    oldActiveButton.classList.remove(FILTERS_CLASS.ACTIVE_BUTTON);
+    activeButton.classList.toggle(FILTERS_CLASS.ACTIVE_BUTTON);
+  };
+
+  var onFiltersButtonClick = function (evt) {
+    var target = evt.target;
+    changeActiveButton(target);
+  };
+
+
+  filtersButton.forEach(function (button) {
+    button.addEventListener('click', onFiltersButtonClick);
+  });
+
+  // загрузка фотографий
+  var successHandler = function (arrayPhotos) {
+    window.photos = arrayPhotos;
+    window.utils.showElement(filtersBlock, FILTERS_CLASS.REMOVE);
+    renderPhotos(window.photos);
   };
 
   var errorHandler = function (errorMessage) {
