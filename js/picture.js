@@ -8,16 +8,12 @@
     ACTIVE_BUTTON: 'img-filters__button--active'
   };
 
-  var FILTER_OPTIONS = {
-    'filter-popular': 'renderPhotos',
-    'filter-random': 'getRandomPhotos',
-    'filter-discussed': 'getDiscussedPhotos'
-  };
-
   var COUNT_PHOTOS = {
     MIN: 0,
     MAX: 10
   };
+
+  var RANDOM_NUMBER = 0.5;
 
   var similarListElement = document.querySelector('.pictures');
 
@@ -70,7 +66,7 @@
   // 10 случайных, не повторяющихся фотографий
   var getRandomsPhotos = function (arrayPhotos) {
     return arrayPhotos.sort(function () {
-      return 0.5-Math.random();
+      return RANDOM_NUMBER - Math.random();
     }).slice(COUNT_PHOTOS.MIN, COUNT_PHOTOS.MAX);
   };
 
@@ -86,6 +82,20 @@
   var changeFilters = function (button) {
     clearPictureBlock();
     var copyWindowPhotos = window.photos.slice();
+    switch (button.id) {
+      case 'filter-popular' :
+        renderPhotos(copyWindowPhotos);
+        break;
+      case 'filter-random' :
+        renderPhotos(getRandomsPhotos(copyWindowPhotos));
+        break;
+      case 'filter-discussed' :
+        renderPhotos(getDiscussedPhotos(copyWindowPhotos));
+        break;
+      default:
+        renderPhotos(copyWindowPhotos);
+    }
+
     renderPhotos(copyWindowPhotos);
   };
 
