@@ -3,7 +3,23 @@
 (function () {
   window.photos = [];
 
+  var FILTERS_CLASS = {
+    REMOVE: 'img-filters--inactive',
+    ACTIVE_BUTTON: 'img-filters__button--active'
+  };
+
+  var COUNT_PHOTOS = {
+    MIN: 0,
+    MAX: 10
+  };
+
+  var RANDOM_NUMBER = 0.5;
+
   var similarListElement = document.querySelector('.pictures');
+
+  // фильтры
+  var filtersBlock = document.querySelector('.img-filters');
+  var filtersButton = document.querySelectorAll('.img-filters__button');
 
   var similarPhotoTemplate = document.querySelector('#picture')
   .content;
@@ -19,16 +35,84 @@
     return photoElement;
   };
 
-  var successHandler = function (arrayPhotos) {
-    window.photos = arrayPhotos;
-
+  var renderPhotos = function (photos) {
     var fragment = document.createDocumentFragment();
 
-    window.photos.forEach(function (photo) {
+    photos.forEach(function (photo) {
       fragment.appendChild(getPhotosElement(photo));
     });
 
     similarListElement.appendChild(fragment);
+  };
+
+  // действия с фильтрами
+  var changeActiveButton = function (activeButton) {
+    var oldActiveButton = filtersBlock.querySelector('.' + FILTERS_CLASS.ACTIVE_BUTTON);
+    oldActiveButton.classList.remove(FILTERS_CLASS.ACTIVE_BUTTON);
+    activeButton.classList.toggle(FILTERS_CLASS.ACTIVE_BUTTON);
+  };
+
+  var onFiltersButtonClick = function (button) {
+    changeActiveButton(button);
+  };
+
+  var clearPictureBlock = function () {
+    var pictureElements = similarListElement.querySelectorAll('.picture');
+    pictureElements.forEach(function (element) {
+      similarListElement.removeChild(element);
+    });
+  };
+
+  // 10 случайных, не повторяющихся фотографий
+  var getRandomsPhotos = function (arrayPhotos) {
+    return arrayPhotos.sort(function () {
+      return RANDOM_NUMBER - Math.random();
+    }).slice(COUNT_PHOTOS.MIN, COUNT_PHOTOS.MAX);
+  };
+
+  // Обсуждаемые — фотографии, отсортированные в порядке убывания количества комментариев
+  var getDiscussedPhotos = function (arrayPhotos) {
+    var sortPhotos = arrayPhotos.sort(function (lastPhoto, nextPhoto) {
+      return nextPhoto.comments.length - lastPhoto.comments.length;
+    });
+
+    return sortPhotos;
+  };
+
+  var changeFilters = function (button) {
+    clearPictureBlock();
+    var copyWindowPhotos = window.photos.slice();
+    switch (button.id) {
+      case 'filter-popular' :
+        renderPhotos(copyWindowPhotos);
+        break;
+      case 'filter-random' :
+        var randomArray = getRandomsPhotos(copyWindowPhotos);
+        renderPhotos(randomArray);
+        break;
+      case 'filter-discussed' :
+        renderPhotos(getDiscussedPhotos(copyWindowPhotos));
+        break;
+      default:
+        renderPhotos(copyWindowPhotos);
+    }
+
+  };
+
+  var debounceFilters = window.debounce(changeFilters);
+  filtersButton.forEach(function (button) {
+    button.addEventListener('click', function (evt) {
+      var target = evt.target;
+      onFiltersButtonClick(target);
+      debounceFilters(target);
+    });
+  });
+
+  // загрузка фотографий
+  var successHandler = function (arrayPhotos) {
+    window.photos = arrayPhotos;
+    window.utils.showElement(filtersBlock, FILTERS_CLASS.REMOVE);
+    renderPhotos(window.photos);
   };
 
   var errorHandler = function (errorMessage) {
