@@ -87,7 +87,8 @@
         renderPhotos(copyWindowPhotos);
         break;
       case 'filter-random' :
-        renderPhotos(getRandomsPhotos(copyWindowPhotos));
+        var randomArray = getRandomsPhotos(copyWindowPhotos);
+        renderPhotos(randomArray);
         break;
       case 'filter-discussed' :
         renderPhotos(getDiscussedPhotos(copyWindowPhotos));
@@ -96,7 +97,6 @@
         renderPhotos(copyWindowPhotos);
     }
 
-    renderPhotos(copyWindowPhotos);
   };
 
   var debounceFilters = window.debounce(changeFilters);
