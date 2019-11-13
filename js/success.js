@@ -5,7 +5,8 @@ window.success = (function () {
   var main = document.querySelector('main');
 
   var similarSuccessTemplate = document.querySelector('#success')
-  .content.cloneNode(true);
+    .content.querySelector('.success');
+
   var successButton = similarSuccessTemplate.querySelector('.success__button');
 
   var onMessageButtonClick = function () {
