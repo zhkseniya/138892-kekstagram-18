@@ -56,7 +56,6 @@ window.form = (function () {
   };
 
   // форма
-  // var form = document.querySelector('#upload-select-image');
   var form = document.querySelector('#upload-select-image');
   var submitButton = document.querySelector('.img-upload__submit');
   // загрузка файла
@@ -83,7 +82,7 @@ window.form = (function () {
   var description = document.querySelector('.text__description');
 
   var onUploadEscPress = function (evt) {
-    window.utils.isEscEvent(evt, closeUpload);
+    window.utils.isEscEvent(evt, onCloseUpload);
   };
 
   // загрузка файла
@@ -92,15 +91,16 @@ window.form = (function () {
     document.addEventListener('keydown', onUploadEscPress);
   };
 
-  var closeUpload = function () {
+  var onCloseUpload = function () {
     uploadFile.value = '';
     defaultEffect.checked = true;
+    resetUserSettings();
     window.utils.hiddenElement(imgUploadOverlay, 'hidden');
     document.removeEventListener('keydown', onUploadEscPress);
     submitButton.disabled = false;
   };
 
-  uploadCancel.addEventListener('click', closeUpload);
+  uploadCancel.addEventListener('click', onCloseUpload);
 
   var setPreviewImage = function (imgUpdate, imgFile, backgroundImg) {
     var reader = new FileReader();
@@ -150,12 +150,18 @@ window.form = (function () {
     control.addEventListener('click', onScaleControlClick);
   });
 
+  var resetScaleValue = function () {
+    scaleControlValue.value = SCALE.MAX;
+    imgUploadPreview.style.transform = 'scale(' + SCALE.MAX / 100 + ')';
+  };
+
   // 2.2. Наложение эффекта на изображение:
   var resetEffectFilter = function () {
     effectValue.value = '100';
     effectDepth.style.width = '100%';
     effectPin.style.left = '100%';
     imgUploadPreview.style.filter = 'none';
+    window.utils.hiddenElement(effectLevel, 'hidden');
   };
 
   var changeEffectFilterValue = function (effect, position) {
@@ -224,6 +230,10 @@ window.form = (function () {
   });
 
   // 2.3. хеш-теги
+  var resetHashtagValue = function () {
+    hashtags.value = '';
+  };
+
   var getDuplicateHashtags = function (arrayElements) {
     for (var i = 0; i < arrayElements.length; i++) {
       for (var j = i + 1; j < arrayElements.length; j++) {
@@ -272,6 +282,10 @@ window.form = (function () {
   });
 
   // 2.4. Комментарий
+  var resetDescriptionValue = function () {
+    description.value = '';
+  };
+
   description.addEventListener('invalid', function () {
     if (description.validity.tooLong) {
       description.setCustomValidity('Комментарий не должен превышать 140-ка символов');
@@ -287,15 +301,23 @@ window.form = (function () {
     document.addEventListener('keydown', onUploadEscPress);
   });
 
-  var successHandler = function () {
-    closeUpload();
+  // сбросить все пользовательские настройки для фотографии
+  var resetUserSettings = function () {
+    resetScaleValue();
     resetEffectFilter();
+    resetHashtagValue();
+    resetDescriptionValue();
+  };
+
+  var successHandler = function () {
+    onCloseUpload();
+    resetUserSettings();
     window.success.showSuccesMessage();
   };
 
   var errorHandler = function (errorMessage) {
-    closeUpload();
-    resetEffectFilter();
+    onCloseUpload();
+    resetUserSettings();
     window.message.showErrorMessage(errorMessage);
   };
 

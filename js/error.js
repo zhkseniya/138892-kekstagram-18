@@ -5,7 +5,7 @@ window.error = (function () {
   var main = document.querySelector('main');
 
   var similarErrorTemplate = document.querySelector('#error')
-  .content.cloneNode(true);
+    .content.cloneNode(true);
   var errorButtons = similarErrorTemplate.querySelector('.error__buttons');
   var errorTitle = similarErrorTemplate.querySelector('.error__title');
 

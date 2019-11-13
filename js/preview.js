@@ -104,7 +104,7 @@ window.preview = (function () {
     }
   });
   picturesBlock.addEventListener('keydown', function (evt) {
-    if (evt.target.className === 'picture__img') {
+    if (evt.target.className === 'picture') {
       onPictureEnterPress(evt);
     }
   });
