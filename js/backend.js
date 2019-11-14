@@ -1,12 +1,12 @@
 'use strict';
 
 window.backend = (function () {
-  var URL = {
+  var Url = {
     GET: 'https://js.dump.academy/kekstagram/data',
     POST: 'https://js.dump.academy/kekstagram'
   };
   var TIMEOUT = 10000; // 10s
-  var STATUS = {
+  var Status = {
     OK: 200
   };
 
@@ -15,7 +15,7 @@ window.backend = (function () {
     xhr.responseType = 'json';
 
     xhr.addEventListener('load', function () {
-      if (xhr.status === STATUS.OK) {
+      if (xhr.status === Status.OK) {
         onSuccess(xhr.response);
       } else {
         onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
@@ -36,12 +36,12 @@ window.backend = (function () {
   return {
     upload: function (data, onSuccess, onError) {
       var xhr = createNewRequest(onSuccess, onError);
-      xhr.open('POST', URL.POST);
+      xhr.open('POST', Url.POST);
       xhr.send(data);
     },
     load: function (onSuccess, onError) {
       var xhr = createNewRequest(onSuccess, onError);
-      xhr.open('GET', URL.GET);
+      xhr.open('GET', Url.GET);
       xhr.send();
     }
   };

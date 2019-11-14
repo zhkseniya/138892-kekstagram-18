@@ -3,12 +3,12 @@
 (function () {
   window.photos = [];
 
-  var FILTERS_CLASS = {
+  var FiltersClass = {
     REMOVE: 'img-filters--inactive',
     ACTIVE_BUTTON: 'img-filters__button--active'
   };
 
-  var COUNT_PHOTOS = {
+  var CountPhotos = {
     MIN: 0,
     MAX: 10
   };
@@ -19,7 +19,7 @@
 
   // фильтры
   var filtersBlock = document.querySelector('.img-filters');
-  var filtersButton = document.querySelectorAll('.img-filters__button');
+  var filterButtons = document.querySelectorAll('.img-filters__button');
 
   var similarPhotoTemplate = document.querySelector('#picture')
   .content;
@@ -47,12 +47,12 @@
 
   // действия с фильтрами
   var changeActiveButton = function (activeButton) {
-    var oldActiveButton = filtersBlock.querySelector('.' + FILTERS_CLASS.ACTIVE_BUTTON);
-    oldActiveButton.classList.remove(FILTERS_CLASS.ACTIVE_BUTTON);
-    activeButton.classList.toggle(FILTERS_CLASS.ACTIVE_BUTTON);
+    var oldActiveButton = filtersBlock.querySelector('.' + FiltersClass.ACTIVE_BUTTON);
+    oldActiveButton.classList.remove(FiltersClass.ACTIVE_BUTTON);
+    activeButton.classList.toggle(FiltersClass.ACTIVE_BUTTON);
   };
 
-  var onFiltersButtonClick = function (button) {
+  var onFilterButtonClick = function (button) {
     changeActiveButton(button);
   };
 
@@ -67,7 +67,7 @@
   var getRandomsPhotos = function (arrayPhotos) {
     return arrayPhotos.sort(function () {
       return RANDOM_NUMBER - Math.random();
-    }).slice(COUNT_PHOTOS.MIN, COUNT_PHOTOS.MAX);
+    }).slice(CountPhotos.MIN, CountPhotos.MAX);
   };
 
   // Обсуждаемые — фотографии, отсортированные в порядке убывания количества комментариев
@@ -100,10 +100,10 @@
   };
 
   var debounceFilters = window.debounce(changeFilters);
-  filtersButton.forEach(function (button) {
+  filterButtons.forEach(function (button) {
     button.addEventListener('click', function (evt) {
       var target = evt.target;
-      onFiltersButtonClick(target);
+      onFilterButtonClick(target);
       debounceFilters(target);
     });
   });
@@ -111,7 +111,7 @@
   // загрузка фотографий
   var successHandler = function (arrayPhotos) {
     window.photos = arrayPhotos;
-    window.utils.showElement(filtersBlock, FILTERS_CLASS.REMOVE);
+    window.utils.showElement(filtersBlock, FiltersClass.REMOVE);
     renderPhotos(window.photos);
   };
 

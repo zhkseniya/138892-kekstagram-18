@@ -32,7 +32,7 @@ window.success = (function () {
   };
 
   return {
-    showSuccesMessage: function () {
+    showMessage: function () {
       main.appendChild(similarSuccessTemplate);
       successButton.addEventListener('click', onMessageButtonClick);
       document.addEventListener('keydown', onDocumentEscPress);
