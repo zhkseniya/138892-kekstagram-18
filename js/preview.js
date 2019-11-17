@@ -1,12 +1,12 @@
 'use strict';
 
 window.preview = (function () {
-  var COMMENTS = {
+  var Comments = {
     MIN: 0,
     MAX: 5
   };
-  var REGEXURL = {
-    PATHNAME: /^\//
+  var RegexUrl = {
+    PATHNAME: /^.*[\\\/]/
   };
   var bigPicture = document.querySelector('.big-picture');
   var picturesBlock = document.querySelector('.pictures');
@@ -40,7 +40,7 @@ window.preview = (function () {
     arrayComments.forEach(function (comment, index) {
       var commentsItem = createComment(comment);
       commentsBlock.appendChild(commentsItem);
-      if (index >= COMMENTS.MAX) {
+      if (index >= Comments.MAX) {
         window.utils.hiddenElement(commentsItem, 'visually-hidden');
       }
     });
@@ -48,11 +48,11 @@ window.preview = (function () {
 
   var onLoadCommentsClick = function (evt) {
     var commentHiddenElements = evt.target.offsetParent.querySelectorAll('.social__comment.visually-hidden');
-    var arrayHiddenElements = [].slice.call(commentHiddenElements, COMMENTS.MIN, COMMENTS.MAX);
+    var arrayHiddenElements = [].slice.call(commentHiddenElements, Comments.MIN, Comments.MAX);
     arrayHiddenElements.forEach(function (comment) {
       window.utils.showElement(comment, 'visually-hidden');
     });
-    if (commentHiddenElements.length <= COMMENTS.MAX) {
+    if (commentHiddenElements.length <= Comments.MAX) {
       window.utils.hiddenElement(evt.target, 'visually-hidden');
     }
   };
@@ -68,7 +68,7 @@ window.preview = (function () {
     document.querySelector(selectorsList.socialCaption).textContent = data.description;
 
     window.utils.hiddenElement(commentsLoader, 'visually-hidden');
-    if (data.comments.length > COMMENTS.MAX) {
+    if (data.comments.length > Comments.MAX) {
       window.utils.showElement(commentsLoader, 'visually-hidden');
     }
   };
@@ -85,7 +85,7 @@ window.preview = (function () {
   var openBigPicture = function (element) {
     var photoSrc = new URL(element.src);
     var photoData = window.photos.filter(function (item) {
-      return item.url === photoSrc.pathname.replace(REGEXURL.PATHNAME, '');
+      return item.url.replace(RegexUrl.PATHNAME, '') === photoSrc.pathname.replace(RegexUrl.PATHNAME, '');
     });
     window.utils.showElement(bigPicture, 'hidden');
     createPhotoContent(photoData[0], selectorList);

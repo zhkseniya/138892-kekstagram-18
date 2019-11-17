@@ -1,23 +1,25 @@
 'use strict';
 
 window.form = (function () {
-  var SCALE = {
+  var FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+
+  var Scale = {
     MIN: 25,
     MAX: 100,
     STEP: 25
   };
-  var PIN = {
+  var Pin = {
     MIN: 0,
     MAX: 100
   };
   var HASHTAGS_COUNT = 5;
-  var REGEX_HASHTAG = {
+  var RegexHashtag = {
     SYMBOL: /^#/,
     LENGTH: /^#[\S]{1,19}$/,
     DUPLICATE: /^#[^#\s]{1,19}$/
   };
   var DEFAULT_EFFECT = 'none';
-  var EFFECTS_PARAMETERS = {
+  var EffectsParameters = {
     chrome: {
       CLASS: 'effects__preview--chrome',
       EFFECT: 'grayscale',
@@ -65,7 +67,7 @@ window.form = (function () {
   var imgUploadPreview = document.querySelector('.img-upload__preview img');
   var imgEffectsPreview = document.querySelectorAll('.effects__preview');
   // масштаб
-  var scaleControl = document.querySelectorAll('button.scale__control');
+  var scaleControls = document.querySelectorAll('button.scale__control');
   var scaleControlValue = document.querySelector('.scale__control--value');
   // эффекты
   var effectLevel = document.querySelector('.effect-level');
@@ -103,16 +105,27 @@ window.form = (function () {
   uploadCancel.addEventListener('click', onCloseUpload);
 
   var setPreviewImage = function (imgUpdate, imgFile, backgroundImg) {
-    var reader = new FileReader();
-    reader.onloadend = function () {
-      if (backgroundImg) {
-        imgUpdate.style.backgroundImage = 'url("' + reader.result + '")';
-      } else {
-        imgUpdate.src = reader.result;
-      }
-    };
-    if (imgFile.type.startsWith('image/')) {
+
+    var fileName = imgFile.name.toLowerCase();
+
+    var matches = FILE_TYPES.some(function (it) {
+      return fileName.endsWith(it);
+    });
+
+    if (matches) {
+      var reader = new FileReader();
+
+      reader.addEventListener('load', function () {
+        if (backgroundImg) {
+          imgUpdate.style.backgroundImage = 'url("' + reader.result + '")';
+        } else {
+          imgUpdate.src = reader.result;
+        }
+      });
+
       reader.readAsDataURL(imgFile);
+
+      openUpload();
     }
   };
 
@@ -123,8 +136,6 @@ window.form = (function () {
     imgEffectsPreview.forEach(function (previewImg) {
       setPreviewImage(previewImg, uploadFile.files[0], true);
     });
-
-    openUpload();
   };
 
   uploadFile.addEventListener('change', onUploadFileChange);
@@ -134,25 +145,25 @@ window.form = (function () {
     evt.preventDefault();
     var value = parseInt(scaleControlValue.value, 10);
     if (evt.target.className.includes('smaller')) {
-      if (value > SCALE.MIN) {
-        value -= SCALE.STEP;
+      if (value > Scale.MIN) {
+        value -= Scale.STEP;
       }
     } else {
-      if (value < SCALE.MAX) {
-        value += SCALE.STEP;
+      if (value < Scale.MAX) {
+        value += Scale.STEP;
       }
     }
     scaleControlValue.value = value + '%';
     imgUploadPreview.style.transform = 'scale(' + value / 100 + ')';
   };
 
-  scaleControl.forEach(function (control) {
+  scaleControls.forEach(function (control) {
     control.addEventListener('click', onScaleControlClick);
   });
 
   var resetScaleValue = function () {
-    scaleControlValue.value = SCALE.MAX;
-    imgUploadPreview.style.transform = 'scale(' + SCALE.MAX / 100 + ')';
+    scaleControlValue.value = Scale.MAX;
+    imgUploadPreview.style.transform = 'scale(' + Scale.MAX / 100 + ')';
   };
 
   // 2.2. Наложение эффекта на изображение:
@@ -165,8 +176,8 @@ window.form = (function () {
   };
 
   var changeEffectFilterValue = function (effect, position) {
-    var effectLevelValue = ((position * EFFECTS_PARAMETERS[effect].MAX) / 100);
-    imgUploadPreview.style.filter = EFFECTS_PARAMETERS[effect].EFFECT + '(' + effectLevelValue + EFFECTS_PARAMETERS[effect].UNIT + ')';
+    var effectLevelValue = ((position * EffectsParameters[effect].MAX) / 100);
+    imgUploadPreview.style.filter = EffectsParameters[effect].EFFECT + '(' + effectLevelValue + EffectsParameters[effect].UNIT + ')';
     effectValue.value = effectLevelValue;
   };
 
@@ -180,7 +191,6 @@ window.form = (function () {
 
   var onEffectPinMouseDown = function (evt) {
     evt.preventDefault();
-
     var startCoordsX = evt.clientX;
 
     var onEffectPinMouseMove = function (moveEvt) {
@@ -190,10 +200,10 @@ window.form = (function () {
       startCoordsX = moveEvt.clientX;
       var movePinPosition = Math.round((effectPin.offsetLeft - shiftX) / sliderEffectLineRect.width * 100);
 
-      if (movePinPosition <= PIN.MIN) {
-        movePinPosition = PIN.MIN;
-      } else if (movePinPosition >= PIN.MAX) {
-        movePinPosition = PIN.MAX;
+      if (movePinPosition <= Pin.MIN) {
+        movePinPosition = Pin.MIN;
+      } else if (movePinPosition >= Pin.MAX) {
+        movePinPosition = Pin.MAX;
       }
 
       calculateEffectLevel(movePinPosition);
@@ -219,9 +229,9 @@ window.form = (function () {
     window.utils.hiddenElement(effectLevel, 'hidden');
     imgUploadPreview.classList = '';
     if (evt.target.value !== DEFAULT_EFFECT) {
-      imgUploadPreview.classList.toggle(EFFECTS_PARAMETERS[evt.target.value].CLASS);
+      imgUploadPreview.classList.toggle(EffectsParameters[evt.target.value].CLASS);
       window.utils.showElement(effectLevel, 'hidden');
-      changeEffectFilterValue(evt.target.value, PIN.MAX);
+      changeEffectFilterValue(evt.target.value, Pin.MAX);
     }
   };
 
@@ -252,11 +262,11 @@ window.form = (function () {
       return item !== '';
     });
     cleanArray.forEach(function (hashtag) {
-      if (!hashtag.match(REGEX_HASHTAG.SYMBOL)) {
+      if (!hashtag.match(RegexHashtag.SYMBOL)) {
         errorMessage = 'хеш-тег должен начинаться с символа #';
-      } else if (!hashtag.match(REGEX_HASHTAG.LENGTH)) {
+      } else if (!hashtag.match(RegexHashtag.LENGTH)) {
         errorMessage = 'минимальная длина хеш-тега - 2 символа, максимальная - 20 символов';
-      } else if (!hashtag.match(REGEX_HASHTAG.DUPLICATE)) {
+      } else if (!hashtag.match(RegexHashtag.DUPLICATE)) {
         errorMessage = 'в хеш-теге может быть не больше одного символа #';
       } else if (cleanArray.length > HASHTAGS_COUNT) {
         errorMessage = 'количесвто хэш-тегов не может быть больше 5';
@@ -312,13 +322,13 @@ window.form = (function () {
   var successHandler = function () {
     onCloseUpload();
     resetUserSettings();
-    window.success.showSuccesMessage();
+    window.success.showMessage();
   };
 
   var errorHandler = function (errorMessage) {
     onCloseUpload();
     resetUserSettings();
-    window.message.showErrorMessage(errorMessage);
+    window.message.showMessage(errorMessage);
   };
 
   // отправка формы

@@ -1,24 +1,36 @@
 'use strict';
 
 window.backend = (function () {
-  var URL = {
+  var Url = {
     GET: 'https://js.dump.academy/kekstagram/data',
     POST: 'https://js.dump.academy/kekstagram'
   };
   var TIMEOUT = 10000; // 10s
-  var STATUS = {
-    OK: 200
+  var Status = {
+    OK: 200,
+    NOT_FOUND: 400,
+    INTERNAL_SERVER_ERROR: 500
   };
 
   var createNewRequest = function (onSuccess, onError) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
+    xhr.timeout = TIMEOUT;
 
     xhr.addEventListener('load', function () {
-      if (xhr.status === STATUS.OK) {
-        onSuccess(xhr.response);
-      } else {
-        onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
+      switch (xhr.status) {
+        case Status.OK:
+          onSuccess(xhr.response);
+          break;
+        case Status.NOT_FOUND:
+          onError('404 Not Found');
+          break;
+        case Status.INTERNAL_SERVER_ERROR:
+          onError('Внутренняя ошибка сервера: ' + xhr.status + ' ' + xhr.statusText);
+          break;
+        default:
+          onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
+          break;
       }
     });
     xhr.addEventListener('error', function () {
@@ -27,21 +39,18 @@ window.backend = (function () {
     xhr.addEventListener('timeout', function () {
       onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
     });
-
-    xhr.timeout = TIMEOUT;
-
     return xhr;
   };
 
   return {
     upload: function (data, onSuccess, onError) {
       var xhr = createNewRequest(onSuccess, onError);
-      xhr.open('POST', URL.POST);
+      xhr.open('POST', Url.POST);
       xhr.send(data);
     },
     load: function (onSuccess, onError) {
       var xhr = createNewRequest(onSuccess, onError);
-      xhr.open('GET', URL.GET);
+      xhr.open('GET', Url.GET);
       xhr.send();
     }
   };

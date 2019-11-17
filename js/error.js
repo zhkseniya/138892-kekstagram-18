@@ -5,7 +5,7 @@ window.error = (function () {
   var main = document.querySelector('main');
 
   var similarErrorTemplate = document.querySelector('#error')
-    .content.cloneNode(true);
+    .content.querySelector('.error');
   var errorButtons = similarErrorTemplate.querySelector('.error__buttons');
   var errorTitle = similarErrorTemplate.querySelector('.error__title');
 
@@ -32,7 +32,7 @@ window.error = (function () {
   };
 
   return {
-    showErrorMessage: function (errorMessage) {
+    showMessage: function (errorMessage) {
       main.appendChild(similarErrorTemplate);
       errorTitle.textContent = errorMessage;
       errorButtons.forEach(function (button) {
