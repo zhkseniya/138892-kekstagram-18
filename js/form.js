@@ -191,7 +191,6 @@ window.form = (function () {
 
   var onEffectPinMouseDown = function (evt) {
     evt.preventDefault();
-
     var startCoordsX = evt.clientX;
 
     var onEffectPinMouseMove = function (moveEvt) {

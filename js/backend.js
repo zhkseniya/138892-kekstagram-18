@@ -7,18 +7,30 @@ window.backend = (function () {
   };
   var TIMEOUT = 10000; // 10s
   var Status = {
-    OK: 200
+    OK: 200,
+    NOT_FOUND: 400,
+    INTERNAL_SERVER_ERROR: 500
   };
 
   var createNewRequest = function (onSuccess, onError) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
+    xhr.timeout = TIMEOUT;
 
     xhr.addEventListener('load', function () {
-      if (xhr.status === Status.OK) {
-        onSuccess(xhr.response);
-      } else {
-        onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
+      switch (xhr.status) {
+        case Status.OK:
+          onSuccess(xhr.response);
+          break;
+        case Status.NOT_FOUND:
+          onError('404 Not Found');
+          break;
+        case Status.INTERNAL_SERVER_ERROR:
+          onError('Внутренняя ошибка сервера: ' + xhr.status + ' ' + xhr.statusText);
+          break;
+        default:
+          onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
+          break;
       }
     });
     xhr.addEventListener('error', function () {
@@ -27,9 +39,6 @@ window.backend = (function () {
     xhr.addEventListener('timeout', function () {
       onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
     });
-
-    xhr.timeout = TIMEOUT;
-
     return xhr;
   };
 
