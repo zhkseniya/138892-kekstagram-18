@@ -1,19 +1,16 @@
 'use strict';
 
 (function () {
-  window.photos = [];
+  var RANDOM_NUMBER = 0.5;
 
   var FiltersClass = {
     REMOVE: 'img-filters--inactive',
     ACTIVE_BUTTON: 'img-filters__button--active'
   };
-
   var CountPhotos = {
     MIN: 0,
     MAX: 10
   };
-
-  var RANDOM_NUMBER = 0.5;
 
   var similarListElement = document.querySelector('.pictures');
 
@@ -23,6 +20,8 @@
 
   var similarPhotoTemplate = document.querySelector('#picture')
   .content;
+
+  window.photos = [];
 
   var getPhotosElement = function (array) {
     var photoElement = similarPhotoTemplate.cloneNode(true);

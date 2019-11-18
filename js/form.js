@@ -2,6 +2,8 @@
 
 window.form = (function () {
   var FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+  var HASHTAGS_COUNT = 5;
+  var DEFAULT_EFFECT = 'none';
 
   var Scale = {
     MIN: 25,
@@ -12,13 +14,11 @@ window.form = (function () {
     MIN: 0,
     MAX: 100
   };
-  var HASHTAGS_COUNT = 5;
   var RegexHashtag = {
     SYMBOL: /^#/,
     LENGTH: /^#[\S]{1,19}$/,
     DUPLICATE: /^#[^#\s]{1,19}$/
   };
-  var DEFAULT_EFFECT = 'none';
   var EffectsParameters = {
     chrome: {
       CLASS: 'effects__preview--chrome',
@@ -104,6 +104,7 @@ window.form = (function () {
 
   uploadCancel.addEventListener('click', onCloseUpload);
 
+  var debounceFoto = window.debounce(openUpload);
   var setPreviewImage = function (imgUpdate, imgFile, backgroundImg) {
 
     var fileName = imgFile.name.toLowerCase();
@@ -125,7 +126,7 @@ window.form = (function () {
 
       reader.readAsDataURL(imgFile);
 
-      openUpload();
+      debounceFoto();
     }
   };
 

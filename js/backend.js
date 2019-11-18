@@ -1,11 +1,12 @@
 'use strict';
 
 window.backend = (function () {
+  var TIMEOUT = 10000; // 10s
+
   var Url = {
     GET: 'https://js.dump.academy/kekstagram/data',
     POST: 'https://js.dump.academy/kekstagram'
   };
-  var TIMEOUT = 10000; // 10s
   var Status = {
     OK: 200,
     NOT_FOUND: 400,
